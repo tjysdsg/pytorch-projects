@@ -1,2 +1,7 @@
+soundfile
+python_speech_features
+scikit-learn
+tqdm
+numpy
 torchvision
 torch
