@@ -13,6 +13,9 @@ from mask.dataloader_wav import WavDataset
 from mask.config import OUTPUT_DIR
 
 
+# TODO: auto resume
+
+
 class AverageMeter:
     """Computes and stores the average and current value"""
 
@@ -36,6 +39,7 @@ class AverageMeter:
 
 
 def init():
+    print("initializing")
     seed = 40
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
@@ -113,9 +117,8 @@ def train(configs):
 
     if not os.path.exists(configs['log_path']):
         os.makedirs(configs['log_path'], exist_ok=True)
-    f_log = open(os.path.join(configs['log_path'], 'train.log'), 'wt')
+    f_log = open(os.path.join(configs['log_path'], 'train.log'), 'a')
 
-    print('Training...')
     for batch_utt, batch_sx, batch_sy in tqdm(train_dataloader, total=len(train_dataloader)):
         iter += 1
 
