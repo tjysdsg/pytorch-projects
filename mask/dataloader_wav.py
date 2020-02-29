@@ -7,8 +7,7 @@ from python_speech_features import logfbank
 
 
 class WavDataset(Dataset):
-    def __init__(self, utt2data, utt2label=None, label2int=None, need_aug=False, with_label=True, shuffle=True,
-                 win_size=6500):
+    def __init__(self, utt2data, utt2label=None, label2int=None, need_aug=False, with_label=True, shuffle=True):
         self.utt2data = utt2data
         self.dataset_size = len(self.utt2data)
         self.shuffle = shuffle

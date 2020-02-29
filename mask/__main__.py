@@ -7,17 +7,20 @@ import torch.optim as optim
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 from sklearn.metrics import recall_score, confusion_matrix
-from mask.nn_models.torch_inception import inception_v3
-from mask.nn_models.torch_resnet import resnet34
+# from mask.nn_models.torch_inception import inception_v3
+from mask.nn_models.torch_resnet import resnet34 as model_t
 from mask.dataloader_wav import WavDataset
 from mask.config import OUTPUT_DIR
 
 
-class AverageMeter(object):
+class AverageMeter:
     """Computes and stores the average and current value"""
 
     def __init__(self):
-        self.reset()
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
 
     def reset(self):
         self.val = 0
@@ -42,12 +45,16 @@ def init():
 
     # type
     feature = "fbank64"
-    model_name = "inceptionv3"
+    model_name = model_t.__name__
 
     workspace_path = os.path.join(OUTPUT_DIR, 'mask')
-    namespace = feature + "_" + model_name
+    namespace = feature + "_" + model_name  # namespace is the dir name under output/mask/
     save_path = os.path.join(workspace_path, namespace, "models")
     log_path = os.path.join(workspace_path, namespace, "log")
+    # create save_path/log_path if they don't exist
+    if not os.path.exists(save_path):
+        os.makedirs(save_path, exist_ok=True)
+        os.makedirs(log_path, exist_ok=True)
 
     # data
     dataset_dir = '/mingback/wuhw/data/compare2020/Mask/index/'
@@ -61,33 +68,32 @@ def init():
 
     # net
     learning_rate = 0.1
-    # net = inception_v3(num_classes=2)
-    net = resnet34(num_classes=2)
+    net = model_t(num_classes=2)
     net = nn.DataParallel(net)
     net = net.cuda()
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9, nesterov=True)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=2, verbose=True, min_lr=1e-4)
 
-    configs = {'win_size': 180,
-               'n_epochs': 100,
-               'epoch': 0,  # current epochs
-               'batch_size': 128,
-               'learning_rate': learning_rate,
-               'resume_model_name': '',
-               'resume_lr': None,
-               'data_info': data_info,
-               'feature': feature,
-               'model_name': model_name,
-               'namespace': namespace,
-               'save_path': save_path,
-               'log_path': log_path,
-               'seed': seed,
-               'model': net,
-               'criterion': criterion,
-               'optimizer': optimizer,
-               'scheduler': scheduler,
-               }
+    configs = {
+        'n_epochs': 100,
+        'epoch': 0,  # current epochs
+        'batch_size': 128,
+        'learning_rate': learning_rate,
+        'resume_model_name': '',
+        'resume_lr': None,
+        'data_info': data_info,
+        'feature': feature,
+        'model_name': model_name,
+        'namespace': namespace,
+        'save_path': save_path,
+        'log_path': log_path,
+        'seed': seed,
+        'model': net,
+        'criterion': criterion,
+        'optimizer': optimizer,
+        'scheduler': scheduler,
+    }
     return configs
 
 
@@ -98,12 +104,11 @@ def train(configs):
     criterion = configs['criterion']
     # data loader preparation
     train_dataset = WavDataset(data_info['train_utt2data'], data_info['utt2label'], data_info['label2int'],
-                               need_aug=True, with_label=True, shuffle=True,
-                               win_size=configs['win_size'])
+                               need_aug=True, with_label=True, shuffle=True)
     train_dataloader = DataLoader(train_dataset, batch_size=configs['batch_size'], num_workers=4)
     net.train()
 
-    iteration_num = 0
+    iter = 0
     losses = AverageMeter()
 
     if not os.path.exists(configs['log_path']):
@@ -112,7 +117,7 @@ def train(configs):
 
     print('Training...')
     for batch_utt, batch_sx, batch_sy in tqdm(train_dataloader, total=len(train_dataloader)):
-        iteration_num += 1
+        iter += 1
 
         batch_sx = torch.unsqueeze(batch_sx, dim=1).float().cuda()
         batch_sy = batch_sy.cuda()
@@ -128,13 +133,13 @@ def train(configs):
         # update loss
         losses.update(loss.data, batch_sx.size()[0])
 
-        if iteration_num % 30 == 29:
+        if iter % 30 == 29:
             _, pred = torch.max(outputs, 1)  # .data.max(1)[1] # get the index of the max log-probability
             correct = pred.eq(batch_sy.data.view_as(pred)).long().cpu().sum()
-            curr_log = '[%d, %5d] loss: %.3f, acc: %d / %d. \n' % (
-                configs['epoch'], iteration_num + 1, losses.avg, correct, configs['batch_size'])
+            curr_log = 'epoch {:d}, iter {:d} loss {:.3f}, acc {:d}/{:d}'.format(
+                configs['epoch'], iter + 1, losses.avg, correct, configs['batch_size'])
             tqdm.write(curr_log)
-            f_log.write(curr_log)
+            f_log.write(curr_log + '\n')
     return losses.avg
 
 
@@ -163,7 +168,7 @@ def validate(configs):
     net.eval()
     data_info = configs['data_info']
     dev_dataset = WavDataset(data_info['dev_utt2data'], data_info['utt2label'], data_info['label2int'], need_aug=True,
-                             with_label=True, shuffle=True, win_size=configs['win_size'])
+                             with_label=True, shuffle=True)
     dev_loader = DataLoader(dev_dataset, batch_size=configs['batch_size'], num_workers=4)
     losses = AverageMeter()
     y_true = []
