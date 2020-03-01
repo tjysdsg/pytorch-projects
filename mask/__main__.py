@@ -11,6 +11,7 @@ from sklearn.metrics import recall_score, confusion_matrix
 from mask.nn_models.torch_resnet import resnet34 as model_t
 from mask.dataloader_wav import WavDataset
 from mask.config import OUTPUT_DIR
+from utils import tensorboard_model
 
 
 # TODO: auto resume
@@ -73,14 +74,17 @@ def init():
     # net
     learning_rate = 0.1
     net = model_t(num_classes=2)
-    net = nn.DataParallel(net)
+    # net = nn.DataParallel(net)
     net = net.cuda()
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9, nesterov=True)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=2, verbose=True, min_lr=1e-4)
 
+    print("logs are stored at {}".format(log_path))
+    print("models are stored at {}".format(save_path))
+
     configs = {
-        'n_epochs': 100,
+        'n_epochs': 200,
         'epoch': 0,  # current epochs
         'batch_size': 128,
         'learning_rate': learning_rate,
@@ -112,7 +116,7 @@ def train(configs):
     train_dataloader = DataLoader(train_dataset, batch_size=configs['batch_size'], num_workers=4)
     net.train()
 
-    iter = 0
+    iteration = 0
     losses = AverageMeter()
 
     if not os.path.exists(configs['log_path']):
@@ -120,7 +124,7 @@ def train(configs):
     f_log = open(os.path.join(configs['log_path'], 'train.log'), 'a')
 
     for batch_utt, batch_sx, batch_sy in tqdm(train_dataloader, total=len(train_dataloader)):
-        iter += 1
+        iteration += 1
 
         batch_sx = torch.unsqueeze(batch_sx, dim=1).float().cuda()
         batch_sy = batch_sy.cuda()
@@ -136,13 +140,14 @@ def train(configs):
         # update loss
         losses.update(loss.data, batch_sx.size()[0])
 
-        if iter % 30 == 29:
+        if iteration % 30 == 29:
             _, pred = torch.max(outputs, 1)  # .data.max(1)[1] # get the index of the max log-probability
             correct = pred.eq(batch_sy.data.view_as(pred)).long().cpu().sum()
             curr_log = 'epoch {:d}, iter {:d} loss {:.3f}, acc {:d}/{:d}'.format(
-                configs['epoch'], iter + 1, losses.avg, correct, configs['batch_size'])
+                configs['epoch'], iteration + 1, losses.avg, correct, configs['batch_size'])
             tqdm.write(curr_log)
             f_log.write(curr_log + '\n')
+
     return losses.avg
 
 
