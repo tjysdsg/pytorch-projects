@@ -15,7 +15,7 @@ class AvgPoolStd(nn.Module):
 
 
 class TDNN(nn.Module):
-    def __init__(self, in_planes, n_classes, embedding_size=512):
+    def __init__(self, in_planes=64, n_classes=2, embedding_size=512):
         super(TDNN, self).__init__()
         # Extractor
         self.conv1 = nn.Conv1d(in_planes, 512, kernel_size=5, dilation=1)
@@ -176,7 +176,7 @@ class F_TDNN(nn.Module):
 
 
 if __name__ == '__main__':
-    net = TDNN(40, 3)
-    a = torch.rand(128, 1, 40, 40)
+    net = TDNN(64, n_classes=2)
+    a = torch.rand(128, 1, 99, 64)
     b, c = net(a)
     print(b.shape)

@@ -7,14 +7,11 @@ import torch.optim as optim
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 from sklearn.metrics import recall_score, confusion_matrix
-# from mask.nn_models.torch_inception import inception_v3
-from mask.nn_models.tdnn import TDNN as model_t
-# from mask.nn_models.torch_resnet import resnet34 as model_t
+from mask.nn_models import resnet34, AlexNet
 from mask.dataloader_wav import WavDataset
 from mask.config import OUTPUT_DIR
 
-
-# from utils import tensorboard_model
+model_t = AlexNet
 
 
 # TODO: auto resume
@@ -76,8 +73,7 @@ def init():
 
     # net
     learning_rate = 0.1
-    # net = model_t(n_classes=2) # resnet34
-    net = model_t(64, n_classes=2)  # tdnn
+    net = model_t(n_classes=2)
     net = nn.DataParallel(net)
     net = net.cuda()
     criterion = nn.CrossEntropyLoss()
@@ -128,10 +124,9 @@ def train(configs):
     f_log = open(os.path.join(configs['log_path'], 'train.log'), 'a')
 
     for batch_utt, batch_sx, batch_sy in tqdm(train_dataloader, total=len(train_dataloader)):
-        # batch_sx.shape: [128, 99, 64]
         iteration += 1
-
         batch_sx = torch.unsqueeze(batch_sx, dim=1).float().cuda()
+        # batch_sx.shape: [128, 1, 99, 64]
         batch_sy = batch_sy.cuda()
 
         optimizer.zero_grad()
@@ -148,7 +143,7 @@ def train(configs):
         if iteration % 30 == 29:
             _, pred = torch.max(outputs, 1)  # .data.max(1)[1] # get the index of the max log-probability
             correct = pred.eq(batch_sy.data.view_as(pred)).long().cpu().sum()
-            curr_log = 'epoch {:d}, iter {:d} loss {:.3f}, acc {:d}/{:d}'.format(
+            curr_log = 'epoch {0:d}, iter {1:d} loss {2:.3f}, acc {3:d}/{4:d}'.format(
                 configs['epoch'], iteration + 1, losses.avg, correct, configs['batch_size'])
             tqdm.write(curr_log)
             f_log.write(curr_log + '\n')

@@ -193,9 +193,7 @@ def resnet152(**kwargs):
     return model
 
 
-def test():
-    net = resnet18()
-    y, emb = net(torch.randn(1, 1, 64, 16))
-    print(emb.size())
-
-# test()
+if __name__ == "__main__":
+    net = resnet34(n_classes=2)
+    y, emb = net(torch.randn(128, 1, 99, 64))
+    print(y.size())
