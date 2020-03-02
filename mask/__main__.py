@@ -16,6 +16,17 @@ model_t = AlexNet
 
 # TODO: auto resume
 
+def resume(save_path: str) -> dict or None:
+    import glob
+    checkpoints = glob.glob(os.path.join(save_path, 'checkpoint*'))
+    if len(checkpoints) > 0:
+        checkpoint_epochs = list(map(lambda x: int(x.split('/')[-1].split('_')[1]), checkpoints))
+        ch = 'checkpoint_{}'.format(max(checkpoint_epochs))
+        print("Using checkpoint {}".format(ch))
+        return torch.load(os.path.join(save_path, ch))
+    else:
+        return None
+
 
 class AverageMeter:
     """Computes and stores the average and current value"""
@@ -56,6 +67,11 @@ def init():
     namespace = feature + "_" + model_name  # namespace is the dir name under output/mask/
     save_path = os.path.join(workspace_path, namespace, "models")
     log_path = os.path.join(workspace_path, namespace, "log")
+
+    configs = resume(save_path)
+    if configs is not None:
+        return configs
+
     # create save_path/log_path if they don't exist
     if not os.path.exists(save_path):
         os.makedirs(save_path, exist_ok=True)
@@ -155,17 +171,12 @@ def save_model(configs):
     torch.save(configs, os.path.join(configs['save_path'], "checkpoint_" + str(configs['epoch'])))
 
 
-def resume(model_name):
-    configs = torch.load(model_name)
-    configs['epoch'] += 1
-    main(configs)
-
-
 def main(configs):
-    for e in range(configs['epoch'], configs['n_epochs'] + 1):
+    while configs['epoch'] < configs['n_epochs'] + 1:
         losses_avg = train(configs)
+        configs['epoch'] += 1
+        e = configs['epoch']
         configs['scheduler'].step(losses_avg)
-        configs['epoch'] += e
         if e in [1, 3, 5] or e % 10 == 0:
             validate(configs)
             save_model(configs)
