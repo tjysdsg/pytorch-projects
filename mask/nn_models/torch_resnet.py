@@ -95,7 +95,7 @@ class Bottleneck(NNBase):
 
 class ResNet(NNBase):
 
-    def __init__(self, block, layers, num_classes=1000, input_channel=1, zero_init_residual=False):
+    def __init__(self, block, layers, n_classes=1000, input_channel=1, zero_init_residual=False):
         super(ResNet, self).__init__()
         self.inplanes = 64
         self.conv1 = self.add_layer(nn.Conv2d(input_channel, 64, kernel_size=7, stride=2, padding=3,
@@ -108,7 +108,7 @@ class ResNet(NNBase):
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
         self.avgpool = self.add_layer(nn.AdaptiveAvgPool2d((1, 1)))
-        self.fc = self.add_layer(nn.Linear(512 * block.expansion, num_classes))
+        self.fc = self.add_layer(nn.Linear(512 * block.expansion, n_classes))
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):

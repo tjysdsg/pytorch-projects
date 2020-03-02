@@ -11,12 +11,11 @@ class AvgPoolStd(nn.Module):
         x_mean = x.mean(dim=2)
         x_std = x.std(dim=2)
         out = torch.cat([x_mean, x_std], dim=1)
-
         return out
 
 
 class TDNN(nn.Module):
-    def __init__(self, in_planes, classes, embedding_size=512):
+    def __init__(self, in_planes, n_classes, embedding_size=512):
         super(TDNN, self).__init__()
         # Extractor
         self.conv1 = nn.Conv1d(in_planes, 512, kernel_size=5, dilation=1)
@@ -34,7 +33,7 @@ class TDNN(nn.Module):
         # Embedding
         self.fc1 = nn.Linear(3000, embedding_size)
         self.fc2 = nn.Linear(embedding_size, embedding_size)
-        self.fc3 = nn.Linear(embedding_size, classes)
+        self.fc3 = nn.Linear(embedding_size, n_classes)
 
     def forward(self, x):
         x = x.reshape(x.shape[0], x.shape[2], x.shape[3])
@@ -53,7 +52,7 @@ class TDNN(nn.Module):
 
 
 class Standard_E_TDNN(nn.Module):
-    def __init__(self, in_planes, classes, embedding_size):
+    def __init__(self, in_planes, n_classes, embedding_size):
         super(Standard_E_TDNN, self).__init__()
         # Extractor
         self.conv1 = nn.Conv1d(in_planes, 512, kernel_size=5, dilation=1)
@@ -73,7 +72,7 @@ class Standard_E_TDNN(nn.Module):
         self.pool = AvgPoolStd()
         # Embedding
         self.fc1 = nn.Linear(3000, embedding_size)
-        self.fc2 = nn.Linear(embedding_size, classes)
+        self.fc2 = nn.Linear(embedding_size, n_classes)
 
     def forward(self, x):
         x = x.transpose(1, 2)
@@ -94,7 +93,7 @@ class Standard_E_TDNN(nn.Module):
 
 
 class BIG_E_TDNN(nn.Module):
-    def __init__(self, in_planes, classes, embedding_size):
+    def __init__(self, in_planes, n_classes, embedding_size):
         super(BIG_E_TDNN, self).__init__()
         # Extractor
         self.conv1 = nn.Conv1d(in_planes, 1024, kernel_size=5, dilation=1)
@@ -114,7 +113,7 @@ class BIG_E_TDNN(nn.Module):
         self.pool = AvgPoolStd()
         # Embedding
         self.fc1 = nn.Linear(4000, embedding_size)
-        self.fc2 = nn.Linear(embedding_size, classes)
+        self.fc2 = nn.Linear(embedding_size, n_classes)
 
     def forward(self, x):
         x = x.transpose(1, 2)
@@ -136,8 +135,8 @@ class BIG_E_TDNN(nn.Module):
 
 # Factorized-TDNN
 class F_TDNN(nn.Module):
-    def __init__(self, in_planes, classes, embedding_size):
-        super(Standard_E_TDNN, self).__init__()
+    def __init__(self, in_planes, n_classes, embedding_size):
+        super(F_TDNN, self).__init__()
         # Extractor
         self.conv1 = nn.Conv1d(in_planes, 1024, kernel_size=5, dilation=1)
         self.bn1 = nn.BatchNorm1d(512)
@@ -156,7 +155,7 @@ class F_TDNN(nn.Module):
         self.pool = AvgPoolStd()
         # Embedding
         self.fc1 = nn.Linear(4000, embedding_size)
-        self.fc2 = nn.Linear(embedding_size, classes)
+        self.fc2 = nn.Linear(embedding_size, n_classes)
 
     def forward(self, x):
         x = x.transpose(1, 2)

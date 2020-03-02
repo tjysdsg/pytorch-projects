@@ -8,10 +8,13 @@ from tqdm import tqdm
 from torch.utils.data import DataLoader
 from sklearn.metrics import recall_score, confusion_matrix
 # from mask.nn_models.torch_inception import inception_v3
-from mask.nn_models.torch_resnet import resnet34 as model_t
+from mask.nn_models.tdnn import TDNN as model_t
+# from mask.nn_models.torch_resnet import resnet34 as model_t
 from mask.dataloader_wav import WavDataset
 from mask.config import OUTPUT_DIR
-from utils import tensorboard_model
+
+
+# from utils import tensorboard_model
 
 
 # TODO: auto resume
@@ -73,8 +76,9 @@ def init():
 
     # net
     learning_rate = 0.1
-    net = model_t(num_classes=2)
-    # net = nn.DataParallel(net)
+    # net = model_t(n_classes=2) # resnet34
+    net = model_t(64, n_classes=2)  # tdnn
+    net = nn.DataParallel(net)
     net = net.cuda()
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9, nesterov=True)
@@ -124,6 +128,7 @@ def train(configs):
     f_log = open(os.path.join(configs['log_path'], 'train.log'), 'a')
 
     for batch_utt, batch_sx, batch_sy in tqdm(train_dataloader, total=len(train_dataloader)):
+        # batch_sx.shape: [128, 99, 64]
         iteration += 1
 
         batch_sx = torch.unsqueeze(batch_sx, dim=1).float().cuda()
