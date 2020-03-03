@@ -88,6 +88,8 @@ def init():
                      label2int=label2int, dev_utt2data=dev_utt2data, utt2label=utt2label)
 
     # net
+    # learning_rate = 0.1 # resnet
+    # learning_rate = 0.2 # alexnet
     learning_rate = 0.1
     net = model_t(n_classes=2)
     net = nn.DataParallel(net)
