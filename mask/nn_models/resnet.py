@@ -2,8 +2,7 @@ import torch
 import torch.nn as nn
 from utils import NNBase
 
-__all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
-           'resnet152']
+__all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152']
 
 
 def conv3x3(in_planes, out_planes, stride=1):
