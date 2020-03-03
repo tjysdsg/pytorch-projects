@@ -7,14 +7,12 @@ import torch.optim as optim
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 from sklearn.metrics import recall_score, confusion_matrix
-from mask.nn_models import resnet34, AlexNet
+from mask.nn_models import resnet34, AlexNet, densenet121
 from mask.dataloader_wav import WavDataset
 from mask.config import OUTPUT_DIR
 
-model_t = AlexNet
+model_t = densenet121
 
-
-# TODO: auto resume
 
 def resume(save_path: str) -> dict or None:
     import glob
@@ -79,6 +77,7 @@ def init():
 
     # data
     dataset_dir = '/mingback/wuhw/data/compare2020/Mask/index/'
+    # dataset_dir = '/home/tjy/repos/compare2020-mask/index/'
     train_utt2data = [[line.split()[0], line.split()[1]] for line in open(dataset_dir + 'train_utt2wav')]
     label2int = dict([line.split() for line in open(dataset_dir + 'label2int')])
     dev_utt2data = [[line.split()[0], line.split()[1]] for line in open(dataset_dir + 'devel_utt2wav')]
