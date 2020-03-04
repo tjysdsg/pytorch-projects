@@ -1,17 +1,17 @@
 import os
-import torch
 import random
 import numpy as np
-import torch.nn as nn
 import torch.optim as optim
+import torch
+from torch import nn
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 from sklearn.metrics import recall_score, confusion_matrix
-from mask.nn_models import resnet34, AlexNet, densenet121
+from mask.nn_models import *
 from mask.dataloader_wav import WavDataset
 from mask.config import OUTPUT_DIR
 
-model_t = densenet121
+model_t = densenet201
 
 
 def resume(save_path: str) -> dict or None:
@@ -58,7 +58,8 @@ def init():
     torch.backends.cudnn.deterministic = True
 
     # type
-    feature = "fbank64"
+    # feature = "logfbank"
+    feature = "ssc"
     model_name = model_t.__name__
 
     workspace_path = os.path.join(OUTPUT_DIR, 'mask')
@@ -89,7 +90,7 @@ def init():
     # net
     # learning_rate = 0.1 # resnet
     # learning_rate = 0.2 # alexnet
-    learning_rate = 0.1
+    learning_rate = 0.01
     net = model_t(n_classes=2)
     net = nn.DataParallel(net)
     net = net.cuda()
@@ -129,7 +130,7 @@ def train(configs):
     criterion = configs['criterion']
     # data loader preparation
     train_dataset = WavDataset(data_info['train_utt2data'], data_info['utt2label'], data_info['label2int'],
-                               need_aug=True, with_label=True, shuffle=True)
+                               need_aug=True, with_label=True, shuffle=True, feat=configs['feature'])
     train_dataloader = DataLoader(train_dataset, batch_size=configs['batch_size'], num_workers=4)
     net.train()
 
@@ -188,7 +189,7 @@ def validate(configs):
     net.eval()
     data_info = configs['data_info']
     dev_dataset = WavDataset(data_info['dev_utt2data'], data_info['utt2label'], data_info['label2int'], need_aug=True,
-                             with_label=True, shuffle=True)
+                             with_label=True, shuffle=True, feat=configs['feature'])
     dev_loader = DataLoader(dev_dataset, batch_size=configs['batch_size'], num_workers=4)
     losses = AverageMeter()
     y_true = []

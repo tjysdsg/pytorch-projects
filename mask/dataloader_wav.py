@@ -3,11 +3,12 @@ import numpy as np
 import torch
 import soundfile as sf
 from torch.utils.data import Dataset
-from python_speech_features import logfbank
+import python_speech_features
 
 
 class WavDataset(Dataset):
-    def __init__(self, utt2data, utt2label=None, label2int=None, need_aug=False, with_label=True, shuffle=True):
+    def __init__(self, utt2data, utt2label=None, label2int=None, need_aug=False, with_label=True, shuffle=True,
+                 feat='mfcc'):
         self.utt2data = utt2data
         self.dataset_size = len(self.utt2data)
         self.shuffle = shuffle
@@ -15,6 +16,7 @@ class WavDataset(Dataset):
         self.utt2label = utt2label
         self.label2int = label2int
         self.need_aug = need_aug
+        self.feat = feat
 
         if self.with_label:
             assert self.utt2label and self.label2int is not None, "utt2label must be provided in with_label model! "
@@ -26,7 +28,11 @@ class WavDataset(Dataset):
         return self.dataset_size
 
     def _transform_data(self, signal, sr):
-        feat = logfbank(signal, sr, nfilt=64)
+        feat_func = getattr(python_speech_features, self.feat)
+        if self.feat == 'mfcc':
+            feat = feat_func(signal, sr, nfilt=64, numcep=64)
+        else:
+            feat = feat_func(signal, sr, nfilt=64)
         return feat.astype('float32')
 
     def augment(self, o_sig, sr, utt_label):
