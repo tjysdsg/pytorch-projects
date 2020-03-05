@@ -11,7 +11,7 @@ from mask.nn_models import *
 from mask.dataloader_wav import WavDataset
 from mask.config import OUTPUT_DIR
 
-model_t = vgg19_bn
+model_t = densenet201
 
 
 def resume(save_path: str) -> dict or None:
@@ -21,7 +21,10 @@ def resume(save_path: str) -> dict or None:
         checkpoint_epochs = list(map(lambda x: int(x.split('/')[-1].split('_')[1]), checkpoints))
         ch = 'checkpoint_{}'.format(max(checkpoint_epochs))
         print("Using checkpoint {}".format(ch))
-        return torch.load(os.path.join(save_path, ch))
+        configs = torch.load(os.path.join(save_path, ch))
+        # restore current lr
+        configs['learning_rate'] = configs['resume_lr']
+        return configs
     else:
         return None
 
@@ -58,18 +61,14 @@ def init():
     torch.backends.cudnn.deterministic = True
 
     # type
-    # feature = "logfbank"
-    feature = "mfcc"
+    feature = "logfbank"
+    # feature = "mfcc"
     model_name = model_t.__name__
 
     workspace_path = os.path.join(OUTPUT_DIR, 'mask')
     namespace = feature + "_" + model_name  # namespace is the dir name under output/mask/
     save_path = os.path.join(workspace_path, namespace, "models")
     log_path = os.path.join(workspace_path, namespace, "log")
-
-    configs = resume(save_path)
-    if configs is not None:
-        return configs
 
     # create save_path/log_path if they don't exist
     if not os.path.exists(save_path):
@@ -88,15 +87,25 @@ def init():
                      label2int=label2int, dev_utt2data=dev_utt2data, utt2label=utt2label)
 
     # net
-    # learning_rate = 0.1 # resnet
-    # learning_rate = 0.2 # alexnet
     learning_rate = 0.01
     net = model_t(n_classes=2)
     net = nn.DataParallel(net)
     net = net.cuda()
+
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9, nesterov=True)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=2, verbose=True, min_lr=1e-4)
+
+    batch_size = 256
+
+    configs = resume(save_path)  # resume and override some settings
+    if configs is not None:
+        configs['criterion'] = criterion
+        configs['optimizer'] = optimizer
+        configs['scheduler'] = scheduler
+        configs['learning_rate'] = learning_rate
+        configs['batch_size'] = batch_size
+        return configs
 
     print("logs are stored at {}".format(log_path))
     print("models are stored at {}".format(save_path))
@@ -104,7 +113,7 @@ def init():
     configs = {
         'n_epochs': 200,
         'epoch': 0,  # current epochs
-        'batch_size': 128,
+        'batch_size': batch_size,
         'learning_rate': learning_rate,
         'resume_model_name': '',
         'resume_lr': None,
@@ -170,6 +179,9 @@ def train(configs):
 
 
 def save_model(configs):
+    # save current lr
+    for param_group in configs['optimizer'].param_groups:
+        configs['resume_lr'] = param_group['lr']
     torch.save(configs, os.path.join(configs['save_path'], "checkpoint_" + str(configs['epoch'])))
 
 
