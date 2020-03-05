@@ -11,7 +11,7 @@ from mask.nn_models import *
 from mask.dataloader_wav import WavDataset
 from mask.config import OUTPUT_DIR
 
-model_t = densenet201
+model_t = vgg19_bn
 
 
 def resume(save_path: str) -> dict or None:
@@ -59,7 +59,7 @@ def init():
 
     # type
     # feature = "logfbank"
-    feature = "ssc"
+    feature = "mfcc"
     model_name = model_t.__name__
 
     workspace_path = os.path.join(OUTPUT_DIR, 'mask')
