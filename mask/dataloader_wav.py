@@ -3,7 +3,12 @@ import numpy as np
 import torch
 import soundfile as sf
 from torch.utils.data import Dataset
-import python_speech_features
+from python_speech_features import logfbank, mfcc, ssc
+from librosa.feature import chroma_cqt
+
+features = dict(cqt=chroma_cqt, mfcc=mfcc, ssc=ssc, logfbank=logfbank)
+
+__all__ = ['WavDataset']
 
 
 class WavDataset(Dataset):
@@ -28,11 +33,14 @@ class WavDataset(Dataset):
         return self.dataset_size
 
     def _transform_data(self, signal, sr):
-        feat_func = getattr(python_speech_features, self.feat)
+        feat_func = features[self.feat]
         if self.feat == 'mfcc':
             feat = feat_func(signal, sr, nfilt=64, numcep=64)
+        elif self.feat == 'cqt':
+            feat = feat_func(signal, sr=sr, n_chroma=64)
         else:
             feat = feat_func(signal, sr, nfilt=64)
+
         return feat.astype('float32')
 
     def augment(self, o_sig, sr, utt_label):

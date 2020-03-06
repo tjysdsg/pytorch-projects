@@ -94,7 +94,7 @@ class Bottleneck(NNBase):
 
 class ResNet(NNBase):
 
-    def __init__(self, block, layers, n_classes=1000, input_channel=1, zero_init_residual=False):
+    def __init__(self, block, layers, n_classes=1000, input_channel=1, zero_init_residual=False, **kwargs):
         super(ResNet, self).__init__()
         self.inplanes = 64
         self.conv1 = self.add_layer(nn.Conv2d(input_channel, 64, kernel_size=7, stride=2, padding=3,

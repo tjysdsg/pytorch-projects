@@ -1,6 +1,5 @@
 # TODO
 
-- MNIST
 - Mask – UAR 0.67
 - 尝试使用不同的网络结构
     1. 基本： 参考torchvision里的各种实现，ResNet，DensetNet，Inception； 

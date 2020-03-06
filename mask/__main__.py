@@ -62,7 +62,6 @@ def init():
 
     # type
     feature = "logfbank"
-    # feature = "mfcc"
     model_name = model_t.__name__
 
     workspace_path = os.path.join(OUTPUT_DIR, 'mask')
@@ -87,7 +86,7 @@ def init():
                      label2int=label2int, dev_utt2data=dev_utt2data, utt2label=utt2label)
 
     # net
-    learning_rate = 0.01
+    learning_rate = 0.02
     net = model_t(n_classes=2)
     net = nn.DataParallel(net)
     net = net.cuda()
@@ -96,7 +95,7 @@ def init():
     optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9, nesterov=True)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=2, verbose=True, min_lr=1e-4)
 
-    batch_size = 256
+    batch_size = 128
 
     configs = resume(save_path)  # resume and override some settings
     if configs is not None:

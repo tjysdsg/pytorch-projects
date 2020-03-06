@@ -6,7 +6,7 @@ __all__ = ['AlexNet']
 
 class AlexNet(nn.Module):
 
-    def __init__(self, in_channels=1, n_classes=1000):
+    def __init__(self, in_channels=1, n_classes=1000, **kwargs):
         super(AlexNet, self).__init__()
         self.features = nn.Sequential(
             nn.Conv2d(in_channels=in_channels, out_channels=64, kernel_size=11, stride=4, padding=2),

@@ -17,7 +17,7 @@ class AvgPoolStd(nn.Module):
 
 
 class TDNN(nn.Module):
-    def __init__(self, in_planes=64, n_classes=2, embedding_size=512):
+    def __init__(self, in_planes=64, n_classes=2, embedding_size=512, **kwargs):
         super(TDNN, self).__init__()
         # Extractor
         self.conv1 = nn.Conv1d(in_planes, 512, kernel_size=5, dilation=1)
