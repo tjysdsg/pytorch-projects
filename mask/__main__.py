@@ -11,7 +11,7 @@ from mask.nn_models import *
 from mask.dataloader_wav import WavDataset
 from mask.config import OUTPUT_DIR
 
-model_t = LSTMAtten
+model_t = AttenGRU
 
 
 def resume(save_path: str) -> dict or None:
@@ -93,7 +93,7 @@ def init():
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9, nesterov=True)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=2, verbose=True, min_lr=1e-4)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=2, verbose=True, min_lr=1e-5)
 
     batch_size = 128
 
