@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 
+__all__ = ['LSTMAtten', 'LSTMAvg', 'LSTMLast', 'LSTMLastDE', 'LSTMTrans', 'LSTMTrans1_deep', 'LSTMTrans2_swc']
+
 
 def batch_matmul_bias(seq, weight, bias, nonlinearity=''):
     s = None

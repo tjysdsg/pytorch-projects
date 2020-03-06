@@ -11,7 +11,7 @@ from mask.nn_models import *
 from mask.dataloader_wav import WavDataset
 from mask.config import OUTPUT_DIR
 
-model_t = densenet201
+model_t = LSTMAtten
 
 
 def resume(save_path: str) -> dict or None:
@@ -86,8 +86,8 @@ def init():
                      label2int=label2int, dev_utt2data=dev_utt2data, utt2label=utt2label)
 
     # net
-    learning_rate = 0.02
-    net = model_t(n_classes=2)
+    learning_rate = 0.01
+    net = model_t(n_classes=2, input_dim=64)
     net = nn.DataParallel(net)
     net = net.cuda()
 
