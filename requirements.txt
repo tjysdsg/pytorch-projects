@@ -5,3 +5,7 @@ tqdm
 numpy
 torchvision
 torch
+scipy
+kaldiio
+pandas
+GPUtil
