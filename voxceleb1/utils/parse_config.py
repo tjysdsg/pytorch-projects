@@ -8,20 +8,18 @@ from voxceleb1.utils import read_json, write_json
 
 
 class ConfigParser:
-    def __init__(self, config, resume=None, modification=None, run_id=None):
+    def __init__(self, config, modification=None, run_id=None):
         """
         class to parse configuration json file. Handles hyperparameters for training, initializations of modules,
             checkpoint saving and logging module.
         :param config: Dict containing configurations, hyperparameters for training. For example, contents of
             `config.json` file
-        :param resume: String, path to the checkpoint being loaded.
         :param modification: Dict keychain:value, specifying position values to be replaced from config dict.
         :param run_id: Unique Identifier for training processes. Used to save checkpoints and training log.
             Timestamp is being used as default
         """
         # load config file and apply modification
         self._config = _update_config(config, modification)
-        self.resume = resume
 
         # set save_dir where trained model and log will be saved.
         save_dir = Path(self.config['trainer']['save_dir'])
@@ -75,7 +73,8 @@ class ConfigParser:
 
         # parse custom cli options into dictionary
         modification = {opt.target: getattr(args, _get_opt_name(opt.flags)) for opt in options}
-        return cls(config, resume, modification)
+        args.resume = resume
+        return cls(config, modification=modification)
 
     def init_obj(self, name, module, *args, **kwargs):
         """
@@ -110,6 +109,10 @@ class ConfigParser:
     def __getitem__(self, name):
         """Access items like ordinary dict."""
         return self.config[name]
+
+    def __setitem__(self, key, value):
+        self._config[key] = value
+        return value
 
     def get_logger(self, name, verbosity=2):
         msg_verbosity = 'verbosity option {} is invalid. Valid options are {}.'.format(verbosity,

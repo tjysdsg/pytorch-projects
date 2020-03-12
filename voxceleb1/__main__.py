@@ -35,7 +35,7 @@ def main(config):
 
     # build model architecture, then print to console
     model = config.init_obj('model', module_model)
-    logger.info(model)
+    # logger.info(model)
 
     # get function handles of loss and metrics
     criterion = config.init_obj('loss', module_loss)
@@ -57,6 +57,7 @@ if __name__ == '__main__':
     args.add_argument('-r', '--resume', default=None, type=str, help='path to latest checkpoint (default: None)')
     args.add_argument('-a', '--auto-resume', default=True, action='store_true',
                       help='find the latest checkpoint and auto resume, will override --resume')
+    parsed_args = args.parse_args()
 
     # custom cli options to modify configuration from default values given in json file.
     CustomArgs = collections.namedtuple('CustomArgs', 'flags type target')
@@ -67,14 +68,20 @@ if __name__ == '__main__':
     ]
 
     config = ConfigParser.from_args(args, options)
-    model_dir = os.path.join(MODEL_DIR, 'voxceleb1', config['trainer']['save_dir'])
-    config['trainer']['save_dir'] = model_dir
+    config['trainer']['save_dir'] = MODEL_DIR
 
     # auto resume
-    if config['auto_resume']:
-        checkpoints = glob.glob(os.path.join(model_dir, 'chkpt', '*.pth'))
+    if parsed_args.auto_resume:
+        print("Auto resume is enabled")
+        checkpoint_dir = os.path.join(MODEL_DIR, config['name'], 'chkpt')
+        checkpoints = glob.glob(os.path.join(checkpoint_dir, '*.pth'))
+
         if len(checkpoints) > 0:
-            checkpoint_epochs = list(map(lambda x: int(x.split('/')[-1].split('_')[1]), checkpoints))
-            ch = 'checkpoint_{}'.format(max(checkpoint_epochs))
-            config['resume'] = os.path.join(model_dir, 'chkpt', ch)
+            # if there is a best model, use it to train
+            if 'model_best.pth' in checkpoints:
+                config['resume'] = os.path.join(checkpoint_dir, 'model_best.pth')
+            else:
+                checkpoint_epochs = list(map(lambda x: int(x.split('/')[-1].split('.')[0].split('_')[1]), checkpoints))
+                ch = 'chkpt_{:03d}.pth'.format(max(checkpoint_epochs))
+                config['resume'] = os.path.join(checkpoint_dir, ch)
     main(config)

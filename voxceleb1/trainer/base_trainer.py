@@ -63,8 +63,8 @@ class BaseTrainer:
         self.train_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
         self.valid_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
 
-        if config.resume is not None:
-            self._resume_checkpoint(config.resume)
+        if config['resume'] is not None:
+            self._resume_checkpoint(config['resume'])
 
     @abstractmethod
     def _train_step(self, batch):
