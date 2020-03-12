@@ -10,12 +10,14 @@ from voxceleb1.utils import read_json, write_json
 class ConfigParser:
     def __init__(self, config, resume=None, modification=None, run_id=None):
         """
-        class to parse configuration json file. Handles hyperparameters for training, initializations of modules, checkpoint saving
-        and logging module.
-        :param config: Dict containing configurations, hyperparameters for training. contents of `config.json` file for example.
+        class to parse configuration json file. Handles hyperparameters for training, initializations of modules,
+            checkpoint saving and logging module.
+        :param config: Dict containing configurations, hyperparameters for training. For example, contents of
+            `config.json` file
         :param resume: String, path to the checkpoint being loaded.
         :param modification: Dict keychain:value, specifying position values to be replaced from config dict.
-        :param run_id: Unique Identifier for training processes. Used to save checkpoints and training log. Timestamp is being used as default
+        :param run_id: Unique Identifier for training processes. Used to save checkpoints and training log.
+            Timestamp is being used as default
         """
         # load config file and apply modification
         self._config = _update_config(config, modification)
@@ -46,10 +48,12 @@ class ConfigParser:
         }
 
     @classmethod
-    def from_args(cls, args, options=''):
+    def from_args(cls, args, options=None):
         """
         Initialize this class from some cli arguments. Used in train, test.
         """
+        if options is None:
+            options = []
         for opt in options:
             args.add_argument(*opt.flags, default=None, type=opt.type)
         if not isinstance(args, tuple):

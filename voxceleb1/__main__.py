@@ -1,3 +1,5 @@
+import os
+import glob
 import argparse
 import collections
 import torch
@@ -8,6 +10,7 @@ import voxceleb1.module.metric as module_metric
 import voxceleb1.module.model as module_model
 import voxceleb1.module.loss as module_loss
 from voxceleb1.utils import setup_seed
+from voxceleb1.config import MODEL_DIR
 from voxceleb1.utils.parse_config import ConfigParser
 from voxceleb1.trainer import Trainer
 
@@ -37,17 +40,14 @@ def main(config):
     # get function handles of loss and metrics
     criterion = config.init_obj('loss', module_loss)
     metrics = [getattr(module_metric, met) for met in config['metrics']]
-
-    # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler
+    # delete all under "lr_scheduler": {} in config.json to disable scheduler
+    # build optimizer, learning rate scheduler
     trainable_params = filter(lambda p: p.requires_grad, model.parameters())
     optimizer = config.init_obj('optimizer', torch.optim, trainable_params)
     lr_scheduler = config.init_obj('lr_scheduler', torch.optim.lr_scheduler, optimizer)
 
-    trainer = Trainer(model, criterion, metrics, optimizer,
-                      config=config,
-                      trainloader=trainloader,
-                      validloader=validloader,
-                      lr_scheduler=lr_scheduler)
+    trainer = Trainer(model, criterion, metrics, optimizer, config=config, trainloader=trainloader,
+                      validloader=validloader, lr_scheduler=lr_scheduler)
     trainer.train()
 
 
@@ -66,7 +66,15 @@ if __name__ == '__main__':
         CustomArgs(['--bs', '--batch_size'], type=int, target='dataloader;args;batch_size')
     ]
 
-    # TODO: auto resume
-
     config = ConfigParser.from_args(args, options)
+    model_dir = os.path.join(MODEL_DIR, 'voxceleb1', config['trainer']['save_dir'])
+    config['trainer']['save_dir'] = model_dir
+
+    # auto resume
+    if config['auto_resume']:
+        checkpoints = glob.glob(os.path.join(model_dir, 'chkpt', '*.pth'))
+        if len(checkpoints) > 0:
+            checkpoint_epochs = list(map(lambda x: int(x.split('/')[-1].split('_')[1]), checkpoints))
+            ch = 'checkpoint_{}'.format(max(checkpoint_epochs))
+            config['resume'] = os.path.join(model_dir, 'chkpt', ch)
     main(config)

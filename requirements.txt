@@ -9,3 +9,6 @@ scipy
 kaldiio
 pandas
 GPUtil
+matplotlib
+librosa
+mock

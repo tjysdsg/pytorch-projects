@@ -12,8 +12,8 @@ class BaseTrainer:
     Base class for all trainers
     """
 
-    def __init__(self, model, criterion, metric_ftns, optimizer, lr_scheduler,
-                 config, trainloader, validloader=None, len_epoch=None):
+    def __init__(self, model, criterion, metric_ftns, optimizer, lr_scheduler, config, trainloader, validloader=None,
+                 len_epoch=None):
         self.config = config
         self.logger = config.get_logger('trainer', config['trainer']['verbosity'])
         self.trainloader = trainloader
@@ -58,7 +58,7 @@ class BaseTrainer:
             self.mnt_best = inf if self.mnt_mode == 'min' else -inf
             self.early_stop = cfg_trainer.get('early_stop', inf)
 
-        # setup visualization writer instance                
+        # setup visualization writer instance
         self.writer = TensorboardWriter(config.log_dir, self.logger, cfg_trainer['tensorboard'])
         self.train_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
         self.valid_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
@@ -168,14 +168,14 @@ class BaseTrainer:
         for epoch in range(self.start_epoch, self.epochs + 1):
             result = self._train_epoch(epoch)
 
-            # save logged informations into log dict
+            # save logged information into log dict
             lr = self.optimizer.param_groups[0]['lr']
             log = {'epoch': epoch, 'lr': lr}
             log.update(result)
 
             # print logged informations to the screen
             for key, value in log.items():
-                self.logger.info('    {:20s}: {}'.format(str(key), value))
+                self.logger.info('\t{:20s}: {}'.format(str(key), value))
 
             # evaluate model performance according to configured metric, save best checkpoint as model_best
             best = False
@@ -221,7 +221,6 @@ class BaseTrainer:
         Saving checkpoints
 
         :param epoch: current epoch number
-        :param log: logging information of the epoch
         :param save_best: if True, rename the saved checkpoint to 'model_best.pth'
         """
         state = {
