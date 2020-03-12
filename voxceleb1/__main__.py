@@ -55,6 +55,8 @@ if __name__ == '__main__':
     args = argparse.ArgumentParser(description='Voxceleb1 speaker identification')
     args.add_argument('-c', '--config', default=None, type=str, help='config file path (default: None)')
     args.add_argument('-r', '--resume', default=None, type=str, help='path to latest checkpoint (default: None)')
+    args.add_argument('-a', '--auto-resume', default=True, action='store true',
+                      help='find the latest checkpoint and auto resume, will override --resume')
 
     # custom cli options to modify configuration from default values given in json file.
     CustomArgs = collections.namedtuple('CustomArgs', 'flags type target')
@@ -63,5 +65,8 @@ if __name__ == '__main__':
         CustomArgs(['--lr', '--learning_rate'], type=float, target='optimizer;args;lr'),
         CustomArgs(['--bs', '--batch_size'], type=int, target='dataloader;args;batch_size')
     ]
+
+    # TODO: auto resume
+
     config = ConfigParser.from_args(args, options)
     main(config)

@@ -45,11 +45,11 @@
   },
   "trainer": {
     "epochs": 100,
-    "save_dir": "saved/",
+    "save_dir": "models/",
     "save_freq": 1,
     "verbosity": 2,
     "save_period": 1,
-    "log_step": 30,
+    "log_step": 60,
     "monitor": "min val_loss",
     "early_stop": 10,
     "tensorboard": true
