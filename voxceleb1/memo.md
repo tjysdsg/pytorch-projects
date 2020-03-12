@@ -30,3 +30,11 @@ vox1_train训练, vox1_test测试时EER低于4%即为合格
 论文: https://www.danielpovey.com/files/2018_icassp_xvectors.pdf
 TDNN == 一维CNN?
 指标: EER 6%~7%即为合格
+
+## Linear Discriminant Analysis
+
+1. Compute the within class and between class scatter matrices
+- Compute the eigenvectors and corresponding eigenvalues for the scatter matrices
+- Sort the eigenvalues and select the top k
+- Create a new matrix containing eigenvectors that map to the k eigenvalues
+- Obtain the new features (i.e. LDA components) by taking the dot product of the data and the matrix from step 4

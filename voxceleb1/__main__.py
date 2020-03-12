@@ -16,7 +16,7 @@ from voxceleb1.trainer import Trainer
 
 
 def main(config):
-    logger = config.get_logger('train')
+    # logger = config.get_logger('train')
 
     # fix random seeds for reproducibility
     if config['seed'] is not None:
