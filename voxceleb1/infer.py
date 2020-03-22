@@ -4,8 +4,12 @@ import GPUtil
 import argparse
 import torch
 from tqdm import tqdm
-import torch.nn as nn
 import kaldiio
+import sys
+from config import PROJECT_ROOT_DIR
+
+sys.path.insert(0, PROJECT_ROOT_DIR)
+
 import voxceleb1.dataset as dataset
 from torch.utils.data import DataLoader
 import voxceleb1.module.model as module_model
@@ -65,11 +69,9 @@ def main(config, args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Speaker Verification Inference')
-    parser.add_argument('-c', '--config', type=str, required=True,
-                        help='config file path')
-    parser.add_argument('-r', '--resume', type=str, required=True,
-                        help='path to latest checkpoint')
-    parser.add_argument('data',
+    parser.add_argument('-c', '--config', type=str, required=True, help='config file path')
+    parser.add_argument('-r', '--resume', type=str, required=True, help='path to latest checkpoint')
+    parser.add_argument('--data', type=str, default=os.path.join(PROJECT_ROOT_DIR, 'voxceleb1', 'data', 'vox1_test'),
                         help='data directory of inputs and outputs.')
     args = parser.parse_args()
     # Read config of the whole system.

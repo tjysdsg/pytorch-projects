@@ -4,6 +4,7 @@ import kaldiio
 from scipy.spatial.distance import cosine
 from sklearn.metrics import roc_curve
 import numpy as np
+from config import PROJECT_ROOT_DIR
 
 
 def compute_eer(y_pred, y):
@@ -51,8 +52,8 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser('Speaker Verification Trials Validation.')
-    parser.add_argument('data',
+    parser = argparse.ArgumentParser('Speaker Verification Model Validation')
+    parser.add_argument('--data', type=str, default=os.path.join(PROJECT_ROOT_DIR, 'voxceleb1', 'data', 'vox1_test'),
                         help='data directory of inputs and outputs.')
     args = parser.parse_args()
 

@@ -108,7 +108,7 @@ class ConfigParser:
 
     def __getitem__(self, name):
         """Access items like ordinary dict."""
-        return self.config[name]
+        return self.config.get(name)
 
     def __setitem__(self, key, value):
         self._config[key] = value

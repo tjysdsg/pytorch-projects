@@ -84,4 +84,6 @@ if __name__ == '__main__':
                 checkpoint_epochs = list(map(lambda x: int(x.split('/')[-1].split('.')[0].split('_')[1]), checkpoints))
                 ch = 'chkpt_{:03d}.pth'.format(max(checkpoint_epochs))
                 config['resume'] = os.path.join(checkpoint_dir, ch)
+    else:
+        config['resume'] = None
     main(config)

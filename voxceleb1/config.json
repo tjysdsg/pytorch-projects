@@ -12,6 +12,7 @@
   "model": {
     "type": "Gvector",
     "args": {
+      "drop": 0
     }
   },
   "dataloader": {
@@ -20,11 +21,11 @@
     }
   },
   "optimizer": {
-    "type": "Adam",
+    "type": "SGD",
     "args": {
       "lr": 0.001,
-      "weight_decay": 0,
-      "amsgrad": true
+      "momentum": 0.9,
+      "nesterov": true
     }
   },
   "loss": {
@@ -37,10 +38,11 @@
     "top_k_acc"
   ],
   "lr_scheduler": {
-    "type": "StepLR",
+    "type": "ReduceLROnPlateau",
     "args": {
-      "step_size": 50,
-      "gamma": 0.1
+      "patience": 2,
+      "verbose": true,
+      "min_lr": 1e-4
     }
   },
   "trainer": {
