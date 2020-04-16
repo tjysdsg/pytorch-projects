@@ -16,7 +16,7 @@ from voxceleb1.trainer import Trainer
 
 
 def main(config):
-    # logger = config.get_logger('train')
+    logger = config.get_logger('train')
 
     # fix random seeds for reproducibility
     if config['seed'] is not None:
@@ -35,7 +35,7 @@ def main(config):
 
     # build model architecture, then print to console
     model = config.init_obj('model', module_model)
-    # logger.info(model)
+    logger.info(model)
 
     # get function handles of loss and metrics
     criterion = config.init_obj('loss', module_loss)

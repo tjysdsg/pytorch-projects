@@ -52,7 +52,7 @@
     "verbosity": 2,
     "save_period": 1,
     "log_step": 60,
-    "monitor": "min val_loss",
+    "monitor": "min",
     "early_stop": 10,
     "tensorboard": false
   }
